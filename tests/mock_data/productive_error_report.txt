@@ -1,0 +1,9 @@
+Subject: Question Regarding API Integration
+
+Hello,
+
+We are currently integrating your payment API into our system and are receiving error code 403. Could you clarify what permissions we may be missing?
+
+Best,
+Ricardo Lima
+Development Team

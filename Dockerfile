@@ -3,8 +3,9 @@ WORKDIR /api
 COPY . .
 
 #RUN export PYTHONPATH="${PYTHONPATH}:/api/"
-RUN uv sync --locked
+RUN uv sync --no-group dev
 RUN python -m compileall -q ./src/
 EXPOSE 8080
 
-ENTRYPOINT ["uv", "run", "uvicorn", "src.server:app", "--host", "0.0.0.0", "--port", "8080"]
+ENTRYPOINT ["uv", "run", "--no-group", "dev", "uvicorn", \
+"src.server:app", "--host", "0.0.0.0", "--port", "8080"]

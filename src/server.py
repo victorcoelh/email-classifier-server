@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 import os
 from typing import Callable
@@ -8,7 +9,7 @@ import nltk
 
 from src.services.classification import email_classification_service
 from src.file_reader import get_text_from_file
-from src.models import ClassificationRequest, ClassificationResponse
+from src.models import ClassificationRequest, ClassificationResponse, EmailType
 
 API_SECRET = os.getenv("API_SECRET")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
@@ -42,24 +43,22 @@ async def check_api_secret(request: Request, call_next: Callable) -> Response:
 
     return await call_next(request)
 
-
 @app.post("/email/classify-files")
 async def classify_email_file(emails: list[UploadFile]) -> list[ClassificationResponse]:
-    response = []    
-    for email in emails:
-        email_content = await get_text_from_file(email)
-        response.append(
-            (await classify_email(ClassificationRequest(email=email_content)))[0]
-        )
-
-    return response
+    email_contents = [await get_text_from_file(email) for email in emails]
+    tasks = [email_classification_service(email) for email in email_contents]
+    
+    results = await asyncio.gather(*tasks)
+    return [map_answer_to_response(result) for result in results]   
 
 @app.post("/email/classify")
 async def classify_email(request: ClassificationRequest) -> list[ClassificationResponse]:
-    classification, confidence, answer = email_classification_service(request.email)
+    llm_answer = await email_classification_service(request.email)
+    return [map_answer_to_response(llm_answer)]
 
-    return [ClassificationResponse(
-        classification=classification,
-        confidence=confidence,
-        suggested_answer=answer
-    )]
+def map_answer_to_response(answer: tuple[EmailType, float, str]) -> ClassificationResponse:
+    return ClassificationResponse(
+        classification=answer[0],
+        confidence=answer[1],
+        suggested_answer=answer[2]
+    )

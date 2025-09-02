@@ -11,6 +11,11 @@ dependencies = [
     "pypdf>=6.0.0",
 ]
 
+[dependency-groups]
+dev = [
+    "scikit-learn>=1.7.1",
+]
+
 [tool.uv]
 package = true
 

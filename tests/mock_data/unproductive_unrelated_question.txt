@@ -1,0 +1,8 @@
+Subject: Just Curious About Your System’s Technology Stack
+
+Hi team,
+
+I was reading about different financial platforms and I got curious — what programming language and database are you using to power your system? I don’t really need this information for any case, but I think it’s interesting to know.
+
+Thanks,
+Ana
