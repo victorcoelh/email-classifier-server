@@ -1,34 +1,87 @@
 # Email Classifier - Backend Server
 
-An API built with FastAPI for classifying e-mails, and suggesting automated answers to them. Uses
-the OpenAI API and Google Gemini for both classification and answer suggestion.
+An API built with FastAPI for classifying e-mails as productive or unproductive. Integrates with
+Google Gemini via OpenAI API for classification.
 
-### Build/Installation
+### Features
+- Classifies e-mails as productive or unproductive
+- Provides a confidence level for each classification
+- Accepts .txt and .pdf files via the endpoint /classify-files/
+- Accepts raw text via the endpoint /classify/
 
-You can build and run the API using Docker. First, make sure you have a working
-installation of Docker (instructions on [docs.docker.com](https://docs.docker.com/engine/install/)).
+### Environment Variables
 
-Then, you can build the API with the following command:
+Before running the server, you'll need to provide three environment variables:
+- ```GEMINI_API_KEY``` -> An API key for the Google Gemini LLM (used for classification)
+- ```API_SECRET``` -> An authentication key. Requests to this server must include this value in the "x-api-key" header.
+- ```FRONTEND_URL``` (Optional) - Frontend URL for CORS validation. Defaults to http://localhost:5173.
 
+### Installation
+
+#### Using Docker
+
+1. Make sure you have (Docker installed)[https://docs.docker.com/engine/install/]
+
+2. Build the API image:
 ```docker build --tag email-api .```
 
-If you do not wish to run the API with Docker, you can also run it using the [UV](https://docs.astral.sh/uv/getting-started/installation/)
-package manager. UV is a Rust-based package manager for Python that simplifies virtual environment
-and package management, while also providing faster installs and builds than pip.
+3. Run the server:
+```docker run -p 8080:8080 email-api --env-file ./.env email-api```
 
-Once you install UV, you can install all dependencies for the project in an isolated virutal environment
-with the following command:
+#### Whitout Docker (Using UV)
 
-```uv sync```
+[UV](https://docs.astral.sh/uv/getting-started/installation/) is a Rust-based package manager for Python
+that simplifies virtual environments and dependency management, while also providing faster installs
+and builds than pip.
 
-UV will automatically create a .venv folder and install all dependencies for you.
+1. Install UV
 
-### Usage
+2. Install dependencies in an isolated virtual environment:
+```uv sync``` (uv automatically creates a .venv folder)
 
-With docker:
+3. Run the server:
+```uv run uvicorn src.server:app --host 0.0.0.0 --port 8080```
 
-```docker run email-api```
+## API Endpoints
 
-With UV:
+### POST /classify/
+Classifies raw text.
 
-```uv run fastapi run src/server.py```
+#### Request Body:
+```json
+{
+  "text": "The content of the e-mail goes here."
+}
+```
+
+#### Response Body:
+```json
+[
+  {
+    "classification": "productive",
+    "confidence": 0.92,
+    "suggested_answer": "Your response suggestion here."
+  }
+]
+```
+
+### POST /classify-files/
+Classify e-mails from file uploads (.txt or .pdf).
+
+#### Request Body:
+```json
+{
+  "emails": [ /* array of files */ ]
+}
+```
+
+#### Response Body:
+```json
+[
+  {
+    "classification": "unproductive",
+    "confidence": 0.85,
+    "suggested_answer": "Your response suggestion here."
+  }
+]
+```

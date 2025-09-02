@@ -11,6 +11,7 @@ from src.file_reader import get_text_from_file
 from src.models import ClassificationRequest, ClassificationResponse
 
 API_SECRET = os.getenv("API_SECRET")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,7 +26,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # frontend origin
+    allow_origins=[FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -33,8 +34,12 @@ app.add_middleware(
 
 @app.middleware("http")
 async def check_api_secret(request: Request, call_next: Callable) -> Response:
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
     if request.headers.get("x-api-key") != API_SECRET:
         return Response(status_code=403, content="Invalid API Key.")
+
     return await call_next(request)
 
 
