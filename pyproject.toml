@@ -20,4 +20,4 @@ dev = [
 package = true
 
 [tool.setuptools]
-packages = ["src"]
+packages = ["src", "tests"]
